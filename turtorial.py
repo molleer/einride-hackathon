@@ -4,6 +4,7 @@ import websocket
 import _thread
 import time
 import cv2
+import numpy as np
 
 host = "192.168.171.132"
 port = 8887
@@ -46,15 +47,16 @@ def on_open(ws):
 
         while True:
             ret, frame = cap.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            edges = cv2.Canny(gray,50,150,apertureSize = 3)
+            lines = cv2.HoughLines(edges,1,np.pi/180, 200)
 
-            # do something based on the frame
-            command = FrameToCommand(ret, frame)
             angle = 0.0
             throttle = 0.2
 
             message = f"{{\"angle\":{command.angle},\"throttle\":{command.throttle},\"drive_mode\":\"user\",\"recording\":false}}"
             ws.send(message)
-            print(message)
+            # print(message)
 
     _thread.start_new_thread(run, ())
 
